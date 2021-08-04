@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
     private void saveImageToGallery(Bitmap bitmap) {
         OutputStream fos;
         try{
-            if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.Q){
+            if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.P){
                 ContentResolver resolver = getContentResolver();
                 ContentValues contentValues = new ContentValues();
                 contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME,"Image_1.jpg");
