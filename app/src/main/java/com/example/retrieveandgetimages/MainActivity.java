@@ -29,6 +29,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.Objects;
 
@@ -70,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
     private void saveImageToGallery(Bitmap bitmap) {
         OutputStream fos;
         try{
-            if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.P){
+            if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.Q){
                 ContentResolver resolver = getContentResolver();
                 ContentValues contentValues = new ContentValues();
                 contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME,"Image_1.jpg");
@@ -80,9 +81,13 @@ public class MainActivity extends AppCompatActivity {
                 fos = resolver.openOutputStream(Objects.requireNonNull(imageUri));
                 bitmap.compress(Bitmap.CompressFormat.JPEG,100, fos);
                 Objects.requireNonNull(fos);
-                Toast.makeText(this,"Image Saved", Toast.LENGTH_SHORT).show();
+            }else{
+                String ImagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString()+File.separator +"TestFolder";
+                File image = new File(ImagesDir,"Image_1.jpg" );
+                fos = new FileOutputStream(image);
+                bitmap.compress(Bitmap.CompressFormat.JPEG,100, fos);
             }
-
+            Toast.makeText(this,"Image Saved", Toast.LENGTH_SHORT).show();
         }catch (Error | FileNotFoundException e){
             Toast.makeText(this,"Image not Saved", Toast.LENGTH_SHORT).show();
         }

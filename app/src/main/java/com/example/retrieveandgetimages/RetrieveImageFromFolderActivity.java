@@ -6,6 +6,7 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -17,6 +18,7 @@ import com.bumptech.glide.Glide;
 public class RetrieveImageFromFolderActivity extends AppCompatActivity {
     ImageView retrievedImage;
     int index = 0;
+    int size;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,13 +32,20 @@ public class RetrieveImageFromFolderActivity extends AppCompatActivity {
     }
 
     public Uri getImage(int index){
+        Uri collection;
+        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.Q){
+            collection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL);
+        }else{
+            collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        }
         ContentResolver resolver = this.getContentResolver();
         //Cursor cursor = resolver.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,null, null, null, null );
         Cursor cursor = resolver.query(
-                MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL),null,null,null,null
+                collection,null,null,null,null
         );
         if(cursor != null){
             Log.d("Sec_Act", "Cursor is not null, size is: " + cursor.getCount());
+            size = cursor.getCount();
             cursor.moveToPosition(index);
             int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
             Long id = cursor.getLong(fieldIndex);
@@ -47,7 +56,11 @@ public class RetrieveImageFromFolderActivity extends AppCompatActivity {
     }
 
     public void nextImage(View view) {
-        index++;
+        if(index==(size-1)){
+            index=0;
+        }else{
+            index++;
+        }
         Uri imgUri = getImage(index);
         //Glide.with(this).load(imgUri).into(retrievedImage);
         retrievedImage.setImageURI(imgUri);
