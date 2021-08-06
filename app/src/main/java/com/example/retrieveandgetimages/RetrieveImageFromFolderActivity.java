@@ -8,12 +8,15 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+
+import java.io.File;
 
 public class RetrieveImageFromFolderActivity extends AppCompatActivity {
     ImageView retrievedImage;
@@ -38,18 +41,30 @@ public class RetrieveImageFromFolderActivity extends AppCompatActivity {
         }else{
             collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
         }
+        String[] projection = new String[] {
+                MediaStore.Images.Media._ID,
+                MediaStore.Images.Media.DISPLAY_NAME,
+                MediaStore.Images.Media.SIZE,
+                MediaStore.Images.Media.RELATIVE_PATH
+        };
+        String selection = MediaStore.Images.Media.RELATIVE_PATH +
+                " like ?";
+        String[] selectionArgs = new String[] {
+                "%"+ "TestFolder" + "%"
+};
         ContentResolver resolver = this.getContentResolver();
         //Cursor cursor = resolver.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,null, null, null, null );
         Cursor cursor = resolver.query(
-                collection,null,null,null,null
+                collection,projection,selection,selectionArgs,null
         );
         if(cursor != null){
-            Log.d("Sec_Act", "Cursor is not null, size is: " + cursor.getCount());
+            //Log.d("Sec_Act", "Cursor is not null, size is: " + cursor.getCount());
             size = cursor.getCount();
             cursor.moveToPosition(index);
             int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
             Long id = cursor.getLong(fieldIndex);
             Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+            Log.d("Sec_Act", "getImage: " + imageUri.getPath());
             return imageUri;
         }
     return null;

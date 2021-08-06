@@ -148,8 +148,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void downloadImage(View view) {
+        int size = 200 + (int)(Math.random() * ((600) + 1));
         Log.d("TestVolley", "It entered the button");
-        String url = "https://picsum.photos/500";
+        String url = "https://picsum.photos/"+Integer.toString(size);
         ImageRequest imgRequest = new ImageRequest(url,
                 new Response.Listener<Bitmap>() {
                     @Override
@@ -185,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
                 bitmap.compress(Bitmap.CompressFormat.JPEG,100, fos);
                 Objects.requireNonNull(fos);
             }else{
-                String ImagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString()+File.separator +"TestFolder";
+                String ImagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
                 File image = new File(ImagesDir,"Image_1.jpg" );
                 fos = new FileOutputStream(image);
                 bitmap.compress(Bitmap.CompressFormat.JPEG,100, fos);
