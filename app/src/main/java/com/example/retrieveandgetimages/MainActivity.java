@@ -47,14 +47,18 @@ public class MainActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_READ = 9;
     ImageView mImageview;
     RequestQueue queue;
+    int index=0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mImageview=findViewById(R.id.imageView);
         queue = Volley.newRequestQueue(this);
-        checkReadStoragePerm(this);
-        checkWriteStoragePerm(this);
+        if((ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+            checkReadStoragePerm(this);
+            checkWriteStoragePerm(this);
+        }
     }
 
     public boolean checkReadStoragePerm(Activity activity){
@@ -110,11 +114,11 @@ public class MainActivity extends AppCompatActivity {
             if (ActivityCompat.shouldShowRequestPermissionRationale(activity,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 
-                // Show an expanation to the user *asynchronously* -- don't block
+                // Show an explanation to the user *asynchronously* -- don't block
                 // this thread waiting for the user's response! After the user
                 // sees the explanation, try again to request the permission.
                 new AlertDialog.Builder(this)
-                        .setTitle("Read Permission")
+                        .setTitle("Write Permission")
                         .setMessage("Allow us")
                         .setPositiveButton("ok", new DialogInterface.OnClickListener() {
                             @Override
@@ -175,28 +179,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void saveImageToGallery(Bitmap bitmap) {
-        OutputStream fos;
-        try{
-            if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.Q){
-                ContentResolver resolver = getContentResolver();
-                ContentValues contentValues = new ContentValues();
-                contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME,"Image_1.jpg");
-                contentValues.put(MediaStore.MediaColumns.MIME_TYPE,"image/jpeg");
-                contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES+ File.separator+"TestFolder");
-                Uri imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,contentValues);
-                fos = resolver.openOutputStream(Objects.requireNonNull(imageUri));
-                bitmap.compress(Bitmap.CompressFormat.JPEG,100, fos);
-                Objects.requireNonNull(fos);
-            }else{
-                String ImagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
-                File image = new File(ImagesDir,"Image_1.jpg" );
-                fos = new FileOutputStream(image);
-                bitmap.compress(Bitmap.CompressFormat.JPEG,100, fos);
+            OutputStream fos;
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    ContentResolver resolver = getContentResolver();
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, "Image_"+ Integer.toString(index) + ".jpg");
+                    contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
+                    contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separator + "TestFolder" + File.separator + "2");
+                    Uri imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+                    fos = resolver.openOutputStream(Objects.requireNonNull(imageUri));
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+                    Objects.requireNonNull(fos);
+                } else {
+                    String ImagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
+                    File image = new File(ImagesDir, "Image_"+ Integer.toString(index) + ".jpg");
+                    fos = new FileOutputStream(image);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+                }
+                Toast.makeText(this, "Image Saved", Toast.LENGTH_SHORT).show();
+                index++;
+            } catch (Error | FileNotFoundException e) {
+                Toast.makeText(this, "Image not Saved", Toast.LENGTH_SHORT).show();
             }
-            Toast.makeText(this,"Image Saved", Toast.LENGTH_SHORT).show();
-        }catch (Error | FileNotFoundException e){
-            Toast.makeText(this,"Image not Saved", Toast.LENGTH_SHORT).show();
-        }
     }
 
     public void imageToFolder(View view) {
@@ -210,49 +215,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void deleteImage(View view) {
-        Uri collection;
-        int size;
-        int index=0;
-        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.Q){
-            collection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL);
-        }else{
-            collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        }
-        String[] projection = new String[] {
-                MediaStore.Images.Media._ID,
-                MediaStore.Images.Media.DISPLAY_NAME,
-                MediaStore.Images.Media.SIZE,
-                MediaStore.Images.Media.RELATIVE_PATH
-        };
-        String selection = MediaStore.Images.Media.RELATIVE_PATH +
-                " like ?";
-        String[] selectionArgs = new String[] {
-                "%"+ "TestFolder" + "%"
-        };
-        ContentResolver resolver = this.getContentResolver();
-        //Cursor cursor = resolver.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,null, null, null, null );
-        Cursor cursor = resolver.query(
-                collection,projection,selection,selectionArgs,null
-        );
-        if(cursor != null){
-            size = cursor.getCount();
-            if(size!=0)
-            {
-                for(int i = 0;i<size;i++)
-                {
-                    cursor.moveToPosition(i);
-                    int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
-                    Long id = cursor.getLong(fieldIndex);
-                    Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-                    Log.d("Sec_Act", "getImage: " + imageUri.getPath());
-                    resolver.delete(imageUri, null, null);
-                }
-                Toast.makeText(this, "Images Deleted", Toast.LENGTH_SHORT).show();
-                //return imageUri;
-            }else{
-                Toast.makeText(this, "Image Folder Empty", Toast.LENGTH_SHORT).show();
-            }
-        }
-        //return null;
+        ImageHelper.deletePhotos(this);
     }
 }
