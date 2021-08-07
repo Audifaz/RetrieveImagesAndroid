@@ -13,6 +13,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
@@ -28,10 +29,10 @@ public class RetrieveImageFromFolderActivity extends AppCompatActivity {
         setContentView(R.layout.activity_retrieve_image_from_folder);
         retrievedImage = findViewById(R.id.imageView2);
         //getImage();
-        Uri imgUri = getImage(index);
+        //Uri imgUri = getImage(index);
         //Glide.with(this).load("https://picsum.photos/700").into(retrievedImage);
         //Glide.with(this).load(imgUri).into(retrievedImage)
-        retrievedImage.setImageURI(imgUri);
+        //retrievedImage.setImageURI(imgUri);
     }
 
     public Uri getImage(int index){
@@ -60,24 +61,29 @@ public class RetrieveImageFromFolderActivity extends AppCompatActivity {
         if(cursor != null){
             //Log.d("Sec_Act", "Cursor is not null, size is: " + cursor.getCount());
             size = cursor.getCount();
-            cursor.moveToPosition(index);
-            int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
-            Long id = cursor.getLong(fieldIndex);
-            Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-            Log.d("Sec_Act", "getImage: " + imageUri.getPath());
-            return imageUri;
+            if(size!=0)
+            {
+                cursor.moveToPosition(index);
+                int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
+                Long id = cursor.getLong(fieldIndex);
+                Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                Log.d("Sec_Act", "getImage: " + imageUri.getPath());
+                return imageUri;
+            }else{
+                Toast.makeText(this, "Image Folder Empty", Toast.LENGTH_SHORT).show();
+            }
         }
     return null;
     }
 
     public void nextImage(View view) {
+        Uri imgUri = getImage(index);
+        //Glide.with(this).load(imgUri).into(retrievedImage);
+        retrievedImage.setImageURI(imgUri);
         if(index==(size-1)){
             index=0;
         }else{
             index++;
         }
-        Uri imgUri = getImage(index);
-        //Glide.with(this).load(imgUri).into(retrievedImage);
-        retrievedImage.setImageURI(imgUri);
     }
 }

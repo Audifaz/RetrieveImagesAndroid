@@ -8,10 +8,12 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
@@ -96,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                     MY_PERMISSIONS_REQUEST_READ);
-            Toast.makeText(this, "Location enabled", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Read External Storage enabled", Toast.LENGTH_SHORT).show();
             return true;
         }
     }
@@ -142,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     MY_PERMISSIONS_REQUEST_WRITE);
-            Toast.makeText(this, "Location enabled", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Write External Storage enabled", Toast.LENGTH_SHORT).show();
             return true;
         }
     }
@@ -205,5 +207,52 @@ public class MainActivity extends AppCompatActivity {
     public void nextActivity(View view) {
         Intent intent = new Intent(MainActivity.this, RetrieveImageFromFolderActivity.class);
         startActivity(intent);
+    }
+
+    public void deleteImage(View view) {
+        Uri collection;
+        int size;
+        int index=0;
+        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.Q){
+            collection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL);
+        }else{
+            collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        }
+        String[] projection = new String[] {
+                MediaStore.Images.Media._ID,
+                MediaStore.Images.Media.DISPLAY_NAME,
+                MediaStore.Images.Media.SIZE,
+                MediaStore.Images.Media.RELATIVE_PATH
+        };
+        String selection = MediaStore.Images.Media.RELATIVE_PATH +
+                " like ?";
+        String[] selectionArgs = new String[] {
+                "%"+ "TestFolder" + "%"
+        };
+        ContentResolver resolver = this.getContentResolver();
+        //Cursor cursor = resolver.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,null, null, null, null );
+        Cursor cursor = resolver.query(
+                collection,projection,selection,selectionArgs,null
+        );
+        if(cursor != null){
+            size = cursor.getCount();
+            if(size!=0)
+            {
+                for(int i = 0;i<size;i++)
+                {
+                    cursor.moveToPosition(i);
+                    int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
+                    Long id = cursor.getLong(fieldIndex);
+                    Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                    Log.d("Sec_Act", "getImage: " + imageUri.getPath());
+                    resolver.delete(imageUri, null, null);
+                }
+                Toast.makeText(this, "Images Deleted", Toast.LENGTH_SHORT).show();
+                //return imageUri;
+            }else{
+                Toast.makeText(this, "Image Folder Empty", Toast.LENGTH_SHORT).show();
+            }
+        }
+        //return null;
     }
 }
