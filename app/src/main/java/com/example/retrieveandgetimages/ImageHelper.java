@@ -141,7 +141,7 @@ public class ImageHelper {
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
                 Objects.requireNonNull(fos);
             } else {
-                String ImagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
+                String ImagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + File.separator + "TestFolder";
                 File image = new File(ImagesDir, "Image_"+ Integer.toString(index) + ".jpg");
                 //fos = new FileOutputStream(image);
                 FileOutputStream out = new FileOutputStream(image);
