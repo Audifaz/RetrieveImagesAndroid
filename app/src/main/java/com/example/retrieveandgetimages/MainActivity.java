@@ -178,35 +178,10 @@ public class MainActivity extends AppCompatActivity {
         queue.add(imgRequest);
     }
 
-    private void saveImageToGallery(Bitmap bitmap) {
-            OutputStream fos;
-            try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    ContentResolver resolver = getContentResolver();
-                    ContentValues contentValues = new ContentValues();
-                    contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, "Image_"+ Integer.toString(index) + ".jpg");
-                    contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
-                    contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separator + "TestFolder" + File.separator + "2");
-                    Uri imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
-                    fos = resolver.openOutputStream(Objects.requireNonNull(imageUri));
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-                    Objects.requireNonNull(fos);
-                } else {
-                    String ImagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
-                    File image = new File(ImagesDir, "Image_"+ Integer.toString(index) + ".jpg");
-                    fos = new FileOutputStream(image);
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-                }
-                Toast.makeText(this, "Image Saved", Toast.LENGTH_SHORT).show();
-                index++;
-            } catch (Error | FileNotFoundException e) {
-                Toast.makeText(this, "Image not Saved", Toast.LENGTH_SHORT).show();
-            }
-    }
-
     public void imageToFolder(View view) {
         Bitmap bitmap = ((BitmapDrawable)mImageview.getDrawable()).getBitmap();
-        saveImageToGallery(bitmap);
+        ImageHelper.saveImageToGallery(bitmap, this, index, "1");
+        index++;
     }
 
     public void nextActivity(View view) {

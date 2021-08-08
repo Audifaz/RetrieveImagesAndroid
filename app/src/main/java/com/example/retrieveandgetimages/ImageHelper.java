@@ -3,9 +3,12 @@ package com.example.retrieveandgetimages;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Toast;
@@ -14,11 +17,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Objects;
 
 public class ImageHelper {
     public static List<Uri> getPhotos(Activity activity){
@@ -109,6 +116,32 @@ public class ImageHelper {
             }else{
                 Toast.makeText(activity, "Image Folder Empty", Toast.LENGTH_SHORT).show();
             }
+        }
+    }
+
+    public static void saveImageToGallery(Bitmap bitmap,Activity activity, int index, String subDir) {
+        OutputStream fos;
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ContentResolver resolver = activity.getContentResolver();
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, "Image_"+ Integer.toString(index) + ".jpg");
+                contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
+                contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separator + "TestFolder" + File.separator + subDir);
+                Uri imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+                fos = resolver.openOutputStream(Objects.requireNonNull(imageUri));
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+                Objects.requireNonNull(fos);
+            } else {
+                String ImagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
+                File image = new File(ImagesDir, "Image_"+ Integer.toString(index) + ".jpg");
+                //fos = new FileOutputStream(image);
+                FileOutputStream out = new FileOutputStream(image);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            }
+            Toast.makeText(activity, "Image Saved", Toast.LENGTH_SHORT).show();
+        } catch (Error | FileNotFoundException e) {
+            Toast.makeText(activity, "Image not Saved", Toast.LENGTH_SHORT).show();
         }
     }
 
