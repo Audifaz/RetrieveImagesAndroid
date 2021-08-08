@@ -150,6 +150,8 @@ public class ImageHelper {
             Toast.makeText(activity, "Image Saved", Toast.LENGTH_SHORT).show();
         } catch (Error | FileNotFoundException e) {
             Toast.makeText(activity, "Image not Saved", Toast.LENGTH_SHORT).show();
+            checkWriteStoragePerm(activity);
+            checkReadStoragePerm(activity);
         }
     }
 
