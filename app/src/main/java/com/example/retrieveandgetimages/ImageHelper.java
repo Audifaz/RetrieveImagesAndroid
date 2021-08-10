@@ -6,6 +6,7 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -88,7 +89,7 @@ public class ImageHelper {
             String selection = MediaStore.Images.Media.DATA +
                     " like ?";
             String[] selectionArgs = new String[]{
-                    "%" + "Horses" + File.separator + "1" + "%"
+                    "%" + "Horses" + File.separator + "2" + "%"
             };
             //Cursor cursor = resolver.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,null, null, null, null );
             Cursor cursor = resolver.query(
@@ -166,7 +167,7 @@ public class ImageHelper {
             String selection = MediaStore.Images.Media.DATA +
                     " like ?";
             String[] selectionArgs = new String[]{
-                    "%" + "Horses" + File.separator + "1" + "%"
+                    "%" + "Horses" + "%"
             };
             ContentResolver resolver = activity.getContentResolver();
             //Cursor cursor = resolver.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,null, null, null, null );
@@ -211,9 +212,13 @@ public class ImageHelper {
                 if (!ImagesDir.exists()) {
                     ImagesDir.mkdirs();
                 }
-                File image = new File(ImagesDir, "Image_" + Integer.toString(index) + ".jpg");
+                String fileName = "Image_" + Integer.toString(index) + ".jpg";
+                File image = new File(ImagesDir, fileName);
                 fos = new FileOutputStream(image);
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+                //MediaStore.Images.Media.insertImage(activity.getContentResolver(), image.getAbsolutePath(), fileName, null);
+                Uri uri = Uri.fromFile(image);
+                activity.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
             }
             Toast.makeText(activity, "Image Saved", Toast.LENGTH_SHORT).show();
         } catch (Error | FileNotFoundException e) {

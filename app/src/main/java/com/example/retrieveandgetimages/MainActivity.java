@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void imageToFolder(View view) {
         Bitmap bitmap = ((BitmapDrawable)mImageview.getDrawable()).getBitmap();
-        ImageHelper.saveImageToGallery(bitmap, this, index, "1");
+        ImageHelper.saveImageToGallery(bitmap, this, index, "2");
         index++;
     }
 
